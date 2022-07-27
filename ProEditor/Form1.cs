@@ -27,6 +27,9 @@ namespace ProEditor
       txt_F.LostFocus += is_check_fld;
       txt_Z1.LostFocus += is_check_fld;
       txt_Z2.LostFocus += is_check_fld;
+      txt_Step.LostFocus += is_check_fld;
+      txt_Start.LostFocus += is_check_fld;
+      txt_End.LostFocus += is_check_fld;
     }
 
     //сохранить файл
@@ -53,19 +56,31 @@ namespace ProEditor
     private void but_edit_Click(object sender, EventArgs e)
     {
       string txt_prog = "", txt_prog_buf = "", fg1 ="";
-      int poz=0, num = 30, h2=0, i=0, j=0, h1=0, hg=0, g=0, g1=0;
+      int poz=0, num = 0, h2=0, i=0, j=0, h1=0, hg=0, g=0, g1=0, step=0;
       int s = Int32.Parse(txt_S.Text); //значение оборотов шпинделя на форме должно реальное, потом его надо умножить на 2 - особенность стойки Esfero 3D
 
       String[] xy_list= txt_XY.Text.Split(new String[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
       h1 = Int32.Parse(txt_H1.Text);
       h2 = Int32.Parse(txt_H2.Text);
       g = Int32.Parse(txt_G.Text);
+      step = Int32.Parse(txt_Step.Text);
 
       //шапка программы
-      string txt_start = "(StepMOTOReN - Esfero 3D)\r\n(TOOL 2 - DIA " + txt_D.Text + " DRILL)\r\n";
-      txt_start += "N5 G90 G17 G40 G80 G00\r\nN10 M06 T2\r\nN15 S"+ Convert.ToString(s*2) + " M03\r\n";
-      txt_start += "N20 G00 G90 Z" + txt_Z1.Text + "\r\nN25 Z10\r\n";
-
+      string txt_start_buf = txt_Start.Text;
+      string txt_start = txt_start_buf.Replace("[D]", txt_D.Text);
+      txt_start = txt_start.Replace("[S]", Convert.ToString(s * 2));
+      txt_start = txt_start.Replace("[Z1]", txt_Z1.Text);
+      string[] stringSeparators = new string[] { "\r\n" };
+      string[] subs = txt_start.Split(stringSeparators, StringSplitOptions.None);
+      string sNum="";
+      txt_start = "";
+      foreach (var sub in subs)
+      {
+        if (i > 1) sNum = "N" + Convert.ToString(step * (i - 1)) + " ";
+        txt_start += sNum + sub + "\r\n";
+        i++;
+      }
+      num = step * (i-1);
       char[] charsToTrim = { '.', ' '};
       hg = g / h1 + 1;
       for (i=0; i< xy_list.Length; i++){
@@ -82,25 +97,32 @@ namespace ProEditor
           if (j == 1) fg1 = " F" + txt_F.Text; else fg1 = "";
           g1 = h1 * j;
           if (g - g1 < 0) g1 = g;
-          txt_prog += "N" + Convert.ToString(num + 5) + " G01 Z-" + Convert.ToString(g1) + fg1 + "\r\n";
+          txt_prog += "N" + Convert.ToString(num + step) + " G01 Z-" + Convert.ToString(g1) + fg1 + "\r\n";
           if (g1 == g) break;
           if (j < hg)
           {
-            txt_prog += "N" + Convert.ToString(num + 10) + " G00 Z" + txt_H.Text + "\r\n";
-            txt_prog += "N" + Convert.ToString(num + 15) + " Z-" + Convert.ToString(h1 * j - h2) + "\r\n";
+            txt_prog += "N" + Convert.ToString(num + step*2) + " G00 Z" + txt_H.Text + "\r\n";
+            txt_prog += "N" + Convert.ToString(num + step*3) + " Z-" + Convert.ToString(h1 * j - h2) + "\r\n";
           }
-          num += 15;
+          num += step*3;
         }
         if(i < xy_list.Length-1)
-          txt_prog += "N" + Convert.ToString(num-5) + " G00 Z" + txt_H.Text + "\r\n";
+          txt_prog += "N" + Convert.ToString(num - step) + " G00 Z" + txt_H.Text + "\r\n";
       }
 
       //конец программы
-      string txt_end = "N" + Convert.ToString(num + 5) + " G00 Z" + txt_Z2.Text + "\r\n";
-      txt_end += "N" + Convert.ToString(num + 10) + " G80\r\n";
-      txt_end += "N" + Convert.ToString(num + 15) + " M05\r\n";
-      txt_end += "N" + Convert.ToString(num + 20) + " M30";
-
+      string txt_end_buf = txt_End.Text;
+      string txt_end = txt_end_buf.Replace("[Z2]", txt_Z2.Text);
+      subs = txt_end.Split(stringSeparators, StringSplitOptions.None);
+      i = 2;
+      txt_end = "";
+      sNum = "";
+      foreach (var sub in subs)
+      {
+        sNum = "N" + Convert.ToString(num + (step * i)) + " ";
+        txt_end += sNum + sub + "\r\n";
+        i++;
+      }
       //итоговая сборка
       txt_box_prog.Text = txt_start + txt_prog + txt_end;
     }
@@ -121,7 +143,7 @@ namespace ProEditor
       }
 
       //проверка свойств чисел
-      if(txt_fld.Name != "txt_XY")
+      if(txt_fld.Name != "txt_XY" && txt_fld.Name != "txt_Start" && txt_fld.Name != "txt_End")
       {
         //проверка является ли значение в поле числом
         bool result = int.TryParse(txt_fld.Text, out val1);
@@ -185,12 +207,34 @@ namespace ProEditor
 
     private void but_close_Click(object sender, EventArgs e)
     {
-      Close();
+      this.Close();
     }
 
-    private void groupBox1_Enter(object sender, EventArgs e)
+    private void frm_edit_prog_Load(object sender, EventArgs e)
     {
+      ToolTip toolTip1 = new ToolTip();
+      toolTip1.AutoPopDelay = 5000;
+      toolTip1.InitialDelay = 1000;
+      toolTip1.ReshowDelay = 500;
+      toolTip1.ShowAlways = true;
 
+      toolTip1.SetToolTip(this.but_edit, "Сгенерировать программу");
+      toolTip1.SetToolTip(this.but_save, "Сохранить программу");
+      toolTip1.SetToolTip(this.but_close, "Закрыть форму");
+      toolTip1.SetToolTip(this.label1, "Начальная высота, с которой начинается сверление");
+      toolTip1.SetToolTip(this.label2, "Глубина сверления на шаге");
+      toolTip1.SetToolTip(this.label3, "Недоход сверления на шаге");
+      toolTip1.SetToolTip(this.label4, "Общая глубина сверления");
+      toolTip1.SetToolTip(this.label5, "Координаты сверления в формате:\r\n X0 Y0\r\nили:\r\n N0 X0 Y0");
+      toolTip1.SetToolTip(this.label6, "Диаметр отверстия сверления");
+      toolTip1.SetToolTip(this.label7, "Высота отвода инструмента в конце цикла сверления");
+      toolTip1.SetToolTip(this.label8, "Высота подвода инструмента в начале цикла сверления");
+      toolTip1.SetToolTip(this.label9, "Величина подачи сверления");
+      toolTip1.SetToolTip(this.label10, "Величина оборотов шпинделя");
+      toolTip1.SetToolTip(this.label11, "Начальный блок программы\r\nПараметры задавать в формате [Param]\r\nЗначение параметров смотри в подписи полей");
+      toolTip1.SetToolTip(this.label12, "Конечный блок программы\r\nПараметры задавать в формате [Param]\r\nЗначение параметров смотри в подписи полей");
+      toolTip1.SetToolTip(this.label13, "Величина шага кадров программы");
+      toolTip1.SetToolTip(this.label14, "Итоговый текст программы");
     }
   }
 }
