@@ -35,13 +35,11 @@ namespace ProEditor
     //сохранить файл
     private void but_save_Click(object sender, EventArgs e)
     {
-      if (txt_box_prog.Text == "")
-      {
+      if (txt_box_prog.Text == ""){
         MessageBox.Show("Нет данных для сохранения!", "", MessageBoxButtons.OK, MessageBoxIcon.Warning);
         return;
       }     
       if (saveFileDialog1.ShowDialog() == DialogResult.Cancel) return;
-
       string file_name = saveFileDialog1.FileName;
       System.IO.File.WriteAllText(file_name, txt_box_prog.Text);
     }
@@ -74,8 +72,7 @@ namespace ProEditor
       string[] subs = txt_start.Split(stringSeparators, StringSplitOptions.None);
       string sNum="";
       txt_start = "";
-      foreach (var sub in subs)
-      {
+      foreach (var sub in subs){
         if (i > 1) sNum = "N" + Convert.ToString(step * (i - 1)) + " ";
         txt_start += sNum + sub + "\r\n";
         i++;
@@ -85,22 +82,19 @@ namespace ProEditor
       hg = g / h1 + 1;
       for (i=0; i< xy_list.Length; i++){
         txt_prog_buf = xy_list[i].Trim(charsToTrim);
-        if (txt_prog_buf.StartsWith("N"))
-        {
+        if (txt_prog_buf.StartsWith("N")){
           poz = txt_prog_buf.IndexOf(" ", 0);
           txt_prog_buf = txt_prog_buf.Substring(poz + 1);
         }
 
         txt_prog += "N" + Convert.ToString(num) + " " + txt_prog_buf + "\r\n";
-        for (j=1; j<= hg; j++)
-        {
+        for (j=1; j<= hg; j++){
           if (j == 1) fg1 = " F" + txt_F.Text; else fg1 = "";
           g1 = h1 * j;
           if (g - g1 < 0) g1 = g;
           txt_prog += "N" + Convert.ToString(num + step) + " G01 Z-" + Convert.ToString(g1) + fg1 + "\r\n";
           if (g1 == g) break;
-          if (j < hg)
-          {
+          if (j < hg){
             txt_prog += "N" + Convert.ToString(num + step*2) + " G00 Z" + txt_H.Text + "\r\n";
             txt_prog += "N" + Convert.ToString(num + step*3) + " Z-" + Convert.ToString(h1 * j - h2) + "\r\n";
           }
@@ -117,8 +111,7 @@ namespace ProEditor
       i = 2;
       txt_end = "";
       sNum = "";
-      foreach (var sub in subs)
-      {
+      foreach (var sub in subs){
         sNum = "N" + Convert.ToString(num + (step * i)) + " ";
         txt_end += sNum + sub + "\r\n";
         i++;
@@ -134,8 +127,7 @@ namespace ProEditor
       
       TextBox txt_fld = (TextBox)sender;
       //проверка на пустые поля
-      if (txt_fld.Text == "")
-      {
+      if (txt_fld.Text == ""){
         MessageBox.Show("Поле не должно быть пустым!", "", MessageBoxButtons.OK, MessageBoxIcon.Warning);
         txt_fld.Undo();
         txt_fld.Focus();
@@ -143,12 +135,10 @@ namespace ProEditor
       }
 
       //проверка свойств чисел
-      if(txt_fld.Name != "txt_XY" && txt_fld.Name != "txt_Start" && txt_fld.Name != "txt_End")
-      {
+      if(txt_fld.Name != "txt_XY" && txt_fld.Name != "txt_Start" && txt_fld.Name != "txt_End"){
         //проверка является ли значение в поле числом
         bool result = int.TryParse(txt_fld.Text, out val1);
-        if (result == false)
-        {
+        if (result == false){
           MessageBox.Show("Значение " + txt_fld.Text + " не является числом!", "", MessageBoxButtons.OK, MessageBoxIcon.Warning);
           txt_fld.Undo();
           txt_fld.Focus();
@@ -156,8 +146,7 @@ namespace ProEditor
         }
         //проверка на ноль и отрицательное значение
         val1 = Int32.Parse(txt_fld.Text);
-        if (val1 <= 0)
-        {
+        if (val1 <= 0){
           MessageBox.Show("Значение " + txt_fld.Text + " не может быть меньше или равным нулю!", "", MessageBoxButtons.OK, MessageBoxIcon.Warning);
           txt_fld.Undo();
           txt_fld.Focus();
@@ -166,17 +155,14 @@ namespace ProEditor
       }
 
       //проверка оборотов шпинделя
-      if (txt_fld.Name == "txt_S")
-      {
-        if (val1 < 3000)
-        {
+      if (txt_fld.Name == "txt_S"){
+        if (val1 < 3000){
           MessageBox.Show("Обороты шпинделя не могут быть меньше 3000!", "", MessageBoxButtons.OK, MessageBoxIcon.Warning);
           txt_fld.Undo();
           txt_fld.Focus();
           return;
         }
-        if (val1 > 12000)
-        {
+        if (val1 > 12000){
           MessageBox.Show("Обороты шпинделя не могут быть больше 12000!", "", MessageBoxButtons.OK, MessageBoxIcon.Warning);
           txt_fld.Undo();
           txt_fld.Focus();
@@ -185,17 +171,14 @@ namespace ProEditor
       }
 
       //проверка глубины и недохода
-      if (txt_fld.Name == "txt_H1" || txt_fld.Name == "txt_H2")
-      {
-        if(flg_err_msg==true)
-        {
+      if (txt_fld.Name == "txt_H1" || txt_fld.Name == "txt_H2"){
+        if(flg_err_msg==true){
           flg_err_msg = false;
           return;
         }
         val1 = Int32.Parse(txt_H1.Text);
         val2 = Int32.Parse(txt_H2.Text);
-        if (val1 <= val2)
-        {
+        if (val1 <= val2){
           flg_err_msg = true;
           MessageBox.Show("Значение Н1 не может быть меньше либо равно Н2!", "", MessageBoxButtons.OK, MessageBoxIcon.Warning);
           txt_fld.Undo();
