@@ -140,8 +140,7 @@ namespace ProEditor
       if(txt_fld.Name != "txt_XY" && txt_fld.Name != "txt_Start" && txt_fld.Name != "txt_End"){
         //проверка является ли значение в поле числом
         bool result = int.TryParse(txt_fld.Text, out val1);
-        if (result == false)
-        {
+        if (result == false){
           MessageBox.Show("Значение " + txt_fld.Text + " не является числом!", "", MessageBoxButtons.OK, MessageBoxIcon.Warning);
           txt_fld.Undo();
           txt_fld.Focus();
