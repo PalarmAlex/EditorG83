@@ -35,13 +35,11 @@ namespace ProEditor
     //сохранить файл
     private void but_save_Click(object sender, EventArgs e)
     {
-      if (txt_box_prog.Text == "")
-      {
+      if (txt_box_prog.Text == ""){
         MessageBox.Show("Нет данных для сохранения!", "", MessageBoxButtons.OK, MessageBoxIcon.Warning);
         return;
       }     
       if (saveFileDialog1.ShowDialog() == DialogResult.Cancel) return;
-
       string file_name = saveFileDialog1.FileName;
       System.IO.File.WriteAllText(file_name, txt_box_prog.Text);
     }
